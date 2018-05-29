@@ -2,24 +2,20 @@
 import cv2
 import numpy as np
 
+
 def carcass_coverage(image_path):
 
-    # Importando as imagens para serem processadas
+    # Retrieving original image
     img = cv2.imread(image_path, cv2.IMREAD_COLOR)
     img = cv2.resize(img, (480, 640))
 
-    # Conversão para o modelo HSV
+    # HSV color model conversion
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-
     # Start: BACKGROUND REMOVAL
-
     lower_color_bg1 = np.array((10, 0, 0), dtype=np.uint8, ndmin=1)
     upper_color_bg1 = np.array((110, 255, 255), dtype=np.uint8, ndmin=1)
     mask_bg1 = cv2.inRange(img_hsv, lower_color_bg1, upper_color_bg1)
-    # mask_bg_hsv1 = cv2.cvtColor(mask_bg1, cv2.COLOR_GRAY2BGR)
-    # _, mask_bg_hsv1 = cv2.threshold(mask_bg_hsv1, 10, 255, cv2.THRESH_BINARY)
-
     # End: BACKGROUND REMOVAL
 
     # Start: HANG PIXELS RANGE
@@ -31,8 +27,8 @@ def carcass_coverage(image_path):
     img_hang = img & mask_hang_hsv1
     _, img_hang = cv2.threshold(img_hang, 2, 255, cv2.THRESH_BINARY)
     img_hang = cv2.cvtColor(img_hang, cv2.COLOR_BGR2GRAY)
-    struct_el = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    dilation = cv2.dilate(img_hang, struct_el, iterations=3)
+    structuring_el = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    dilation = cv2.dilate(img_hang, structuring_el, iterations=3)
     # End: HANG PIXELS RANGE
 
     # Start: TOTAL PIXELS RANGE
@@ -50,17 +46,10 @@ def carcass_coverage(image_path):
     th_img_total_gray = th_img_total_gray - dilation - mask_bg1
     _, th_img_total_gray = cv2.threshold(th_img_total_gray, 20, 255, cv2.THRESH_BINARY)
 
-    # im = cv2.resize(cv2.imread(image_path, cv2.IMREAD_COLOR), (480, 640))
-    # cv2.imshow("im", im)
-    # cv2.imshow("img_hsv", img_hsv)
-    # cv2.imshow("th_img_total_gray", th_img_total_gray)
-    # h, s, v = cv2.split(img_hsv)
-    # cv2.imshow("h", h)
-
-    struct_el = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    opening_img_total_gray = cv2.morphologyEx(th_img_total_gray, cv2.MORPH_OPEN, struct_el, iterations=1)
-    struct_el = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-    closing_img_total_gray = cv2.morphologyEx(opening_img_total_gray, cv2.MORPH_CLOSE, struct_el, iterations=3)
+    structuring_el = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    opening_img_total_gray = cv2.morphologyEx(th_img_total_gray, cv2.MORPH_OPEN, structuring_el, iterations=1)
+    structuring_el = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    closing_img_total_gray = cv2.morphologyEx(opening_img_total_gray, cv2.MORPH_CLOSE, structuring_el, iterations=3)
 
     cntrs = []
     _, contours, hierarchy = cv2.findContours(closing_img_total_gray, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -71,6 +60,8 @@ def carcass_coverage(image_path):
     if len(cntrs) > 0:
         epsilon = 5
         approx = cv2.approxPolyDP(cntrs[0], epsilon, True)
+
+        # Step-by-step image processing description. TODO: Remove after tests
         # cv2.drawContours(img_total_range, [approx], -1, (0, 255, 0), 3)
 
         img_total = np.zeros((640, 480), dtype=np.uint8)
@@ -89,9 +80,6 @@ def carcass_coverage(image_path):
         upper_color_red2 = np.array((179, 255, 255), dtype=np.uint8, ndmin=1)
         mask2 = cv2.inRange(img_hsv, lower_color_red2, upper_color_red2)
 
-        # h, s, v = cv2.split(img_hsv)
-        # cv2.imshow("s", s)
-
         img_fat = img_total - mask1 - mask2
 
         # Quantifying red (non-fat) carcass area
@@ -100,9 +88,9 @@ def carcass_coverage(image_path):
 
         # Coverage percentage
         if total_px > 0:
-            perc_coverage = (fat_px / float(total_px)) * 100
+            percentage_coverage = (fat_px / float(total_px)) * 100
         else:
-            perc_coverage = 0
+            percentage_coverage = 0
 
         img_fat = cv2.cvtColor(img_fat, cv2.COLOR_GRAY2BGR)
         img_fat[np.where((img_fat != [0, 0, 0]).all(axis=2))] = [0, 255, 255]
@@ -112,7 +100,7 @@ def carcass_coverage(image_path):
         img_total_output = img & img_total_output
         overlay = cv2.addWeighted(img_total_output, 0.8, img_fat, 0.2, 0)
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cov_text = "Fat Coverage: %2.2f%%" % perc_coverage
+        cov_text = "Fat Coverage: %2.2f%%" % percentage_coverage
         cv2.putText(overlay, cov_text, (260, 630), font, 0.6, (255, 255, 255), 2, cv2.LINE_AA)
 
         return overlay

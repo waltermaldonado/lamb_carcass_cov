@@ -95,3 +95,6 @@ pip-selfcheck.json
 
 .idea/.name
 .idea/workspace.xml
+
+# Output images created for the tests
+output/
