@@ -59,13 +59,13 @@ def carcass_coverage(image_path, show_steps=False, save_steps=False):
         # End: TOTAL PIXELS RANGE
 
         # Start: RED PIXELS RANGE
-        img_hsv = img_hsv & cv2.cvtColor(img_total, cv2.COLOR_GRAY2BGR)
+        img_hsv_roi = img_hsv & cv2.cvtColor(img_total, cv2.COLOR_GRAY2BGR)
         lower_color_red1 = np.array((0, 70, 0), dtype=np.uint8, ndmin=1)
         upper_color_red1 = np.array((15, 255, 255), dtype=np.uint8, ndmin=1)
-        mask1 = cv2.inRange(img_hsv, lower_color_red1, upper_color_red1)
+        mask1 = cv2.inRange(img_hsv_roi, lower_color_red1, upper_color_red1)
         lower_color_red2 = np.array((170, 70, 0), dtype=np.uint8, ndmin=1)
         upper_color_red2 = np.array((179, 255, 255), dtype=np.uint8, ndmin=1)
-        mask2 = cv2.inRange(img_hsv, lower_color_red2, upper_color_red2)
+        mask2 = cv2.inRange(img_hsv_roi, lower_color_red2, upper_color_red2)
 
         img_fat = img_total - mask1 - mask2
 
@@ -121,6 +121,7 @@ def carcass_coverage(image_path, show_steps=False, save_steps=False):
                 cv2.imwrite("8-img_total_range_c1.JPG", img_total_range_c1)
                 cv2.imwrite("9-img_total_range_c2.JPG", img_total_range_c2)
                 cv2.imwrite("10-img_fat.JPG", img & img_fat)
+                cv2.imwrite("11-overlay.JPG", overlay)
 
         return overlay
 

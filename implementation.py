@@ -31,6 +31,6 @@ import shutil
 # cv2.imshow("img", ccov.carcass_coverage("IMG/AOL4/59/DSC01360.JPG"))
 # cv2.imshow("img", ccov.carcass_coverage("IMG/AOL2/48/DSC01277.JPG"))
 
-cv2.imshow("final", ccov.carcass_coverage("IMG/AOL1/05/DSC01226.JPG", save_steps=True))
+cv2.imshow("final", ccov.carcass_coverage("IMG/AOL1/05/DSC01227.JPG", save_steps=True))
 
 cv2.waitKey(0)
