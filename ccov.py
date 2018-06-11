@@ -91,6 +91,7 @@ def carcass_coverage(image_path, show_steps=False, save_steps=False):
         cov_text = "Fat Coverage: %2.2f%%" % percentage_coverage
         cv2.putText(overlay, cov_text, (260, 630), font, 0.6, (255, 255, 255), 2, cv2.LINE_AA)
 
+        # Output related stuff: Shows or stores the steps in the image processing
         if show_steps | save_steps:
             img_total_range = img & cv2.cvtColor(closing_img_total_gray, cv2.COLOR_GRAY2BGR)
             img_total_range_c1 = img_total_range.copy()
